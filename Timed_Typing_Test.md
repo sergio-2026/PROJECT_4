@@ -10,30 +10,30 @@ You are provided with a basic HTML structure, a CSS stylesheet, and a skeleton J
 
 ### 1. Core Functionality
 
-- **Standard Timer:** Implement a minute/second/hundredths timer (00:00:00).
-- **Input Validation:** Compare the user's input in the textarea with the provided origin text.
-- **Event Handling:** Use appropriate event listeners for keyboard input (to start/check the test) and button clicks (to reset).
-- **Reset Logic:** The "Start Over" button must clear the text area, reset the timer to zero, and revert any visual state changes.
+1.1 - **Standard Timer:** Implement a minute/second/hundredths timer (00:00:00).
+1.2 - **Input Validation:** Compare the user's input in the textarea with the provided origin text.
+1.3 - **Event Handling:** Use appropriate event listeners for keyboard input (to start/check the test) and button clicks (to reset).
+1.4 - **Reset Logic:** The "Start Over" button must clear the text area, reset the timer to zero, and revert any visual state changes.
 
 ### 2. Advanced Requirements
 
 To receive full credit and satisfy the "Creativity" component of the rubric, you must implement the following:
 
 - **Dynamic Visual Feedback:**
-  - The border color of the `.test-wrapper` must change in real-time.
-  - **Blue:** While typing and matching the text correctly.
-  - **Orange/Red:** If a typo is detected (input doesn't match the substring of the origin).
-  - **Green:** When the test is successfully completed.
+2.1  - The border color of the `.test-wrapper` must change in real-time.
+2.2  - **Blue:** While typing and matching the text correctly.
+2.3  - **Orange/Red:** If a typo is detected (input doesn't match the substring of the origin).
+2.4   - **Green:** When the test is successfully completed.
 - **Data Persistence (Local Storage):**
-  - Display the **Top Three Fastest Scores** on the page.
-  - These scores must persist across browser refreshes using the `localStorage` API.
+2.5  - Display the **Top Three Fastest Scores** on the page.
+2.6  - These scores must persist across browser refreshes using the `localStorage` API.
 
 - **Content Randomization:**
-  - Create an array of at least 5 different text paragraphs in your JavaScript file.
-  - Each time the "Start Over" button is clicked, a random paragraph from the array should be injected into the `#origin-text p` element.
+2.7  - Create an array of at least 5 different text paragraphs in your JavaScript file.
+2.8  - Each time the "Start Over" button is clicked, a random paragraph from the array should be injected into the `#origin-text p` element.
 - **Live Performance Metrics:**
-  - **WPM (Words Per Minute):** Calculate and display the WPM using the standard formula: `(Total Characters / 5) / (Total Seconds / 60)`.
-  - **Error Counter:** Keep track of how many times the user makes a mistake (mismatching characters) during a single session.
+2.9  - **WPM (Words Per Minute):** Calculate and display the WPM using the standard formula: `(Total Characters / 5) / (Total Seconds / 60)`.
+2.10  - **Error Counter:** Keep track of how many times the user makes a mistake (mismatching characters) during a single session.
 
 ## Grading Rubric
 
