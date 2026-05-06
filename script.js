@@ -19,11 +19,12 @@ let currentWpm = 0;
 
 // 2.7 Random Paragraphs: at least 5 pieces of text for the user to type
 const paragraphList = [
-  "Typing every day helps your hands and brain work as a team.",
-  "JavaScript lets web pages listen and react when people click or type.",
-  "Short practice sessions are better than one very long and boring session.",
-  "Careful typing is usually faster in the end than fast but very sloppy typing.",
-  "Small projects are great because you can finish them and feel proud quickly."
+  "Here, then, is the problem which we present to you, stark and dreadful and inescapable:",
+  "Shall we put an end to the human race; or shall mankind renounce war?",
+  "The darkest places in hell are reserved for those who maintain their neutrality in times of moral crisis.",
+  "If we choose, we can live in a world of comforting illusion.",
+  "Human language appears to be a unique phenomenon, without significant analogue in the animal world.",
+  "Education has a value in itself, regardless of the economic impact it produces on society."
 ];
 
 // 2.5 and 2.6 Top Scores: this array holds the fastest results
