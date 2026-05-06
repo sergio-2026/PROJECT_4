@@ -1,188 +1,116 @@
-/*--------------------------------------------------------------
-Typography
---------------------------------------------------------------*/
-
-body,
-button,
-input,
-select,
-textarea {
-	font-family: 'Source Sans Pro', 'Helvetica', Arial, sans-serif;
-	font-size: 18px;
-	line-height: 1.5;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-	clear: both;
-}
-
-p {
-	margin-bottom: 1.5em;
-}
-
-b,
-strong {
-	font-weight: bold;
-}
-
-dfn,
-cite,
-em,
-i {
-	font-style: italic;
-}
-
-blockquote {
-	margin: 0 1.5em;
-}
-
-address {
-	margin: 0 0 1.5em;
-}
-
-pre {
-	background: #eee;
-	font-family: "Courier 10 Pitch", Courier, monospace;
-	font-size: 15px;
-	font-size: 1.5rem;
-	line-height: 1.6;
-	margin-bottom: 1.6em;
-	max-width: 100%;
-	overflow: auto;
-	padding: 1.6em;
-}
-
-code,
-kbd,
-tt,
-var {
-	font: 15px Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
-}
-
-abbr,
-acronym {
-	border-bottom: 1px dotted #666;
-	cursor: help;
-}
-
-mark,
-ins {
-	background: #fff9c0;
-	text-decoration: none;
-}
-
-sup,
-sub {
-	font-size: 75%;
-	height: 0;
-	line-height: 0;
-	position: relative;
-	vertical-align: baseline;
-}
-
-sup {
-	bottom: 1ex;
-}
-
-sub {
-	top: .5ex;
-}
-
-small {
-	font-size: 75%;
-}
-
-big {
-	font-size: 125%;
-}
-
-/*--------------------------------------------------------------
-Layout
---------------------------------------------------------------*/
+/* Simple page font and background */
 body {
-    margin: 0;
-    padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 20px;
 }
 
-.masthead {
-    padding: 1em 2em;
-    background-color: #0D1B2E;
-    color: white;
+/* Main centered container */
+#app-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.masthead h1 {
-    text-align: center;
+/* Spacing for paragraphs */
+p {
+  line-height: 1.5;
 }
 
-.intro {
-    padding: 2em 2em;
-    color: #ffffff;
-    background: #429890;
-}
-
-
-.intro p,
-.test-area {
-    margin: 0 auto;
-    max-width: 550px;
-}
-
-.test-area {
-    margin-bottom: 4em;
-    padding: 0 2em;
-}
-
+/* Test wrapper that holds the origin text and the textarea */
 .test-wrapper {
-    border: 10px solid grey;
-    border-radius: 10px;
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 6px;
+  border: 3px solid #999999; /* default gray border */
+  background-color: #fafafa;
 }
 
+/* 2.1-2.4 Dynamic Visual Feedback: different border colors for each state */
+/* Neutral state before typing starts */
+.border-neutral {
+  border-color: #999999;
+}
+
+/* 2.2 Blue: while user is typing and text matches so far */
+.border-correct {
+  border-color: #2196f3;
+}
+
+/* 2.3 Orange/Red: user made a typo */
+.border-error {
+  border-color: #ff9800;
+}
+
+/* 2.4 Green: typing test finished with full match */
+.border-complete {
+  border-color: #4caf50;
+}
+
+/* Origin text styling */
 #origin-text {
-    margin: 1em 0;
-    padding: 1em 1em 0;
-    background-color: #ededed;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #eeeeee;
+  border-radius: 4px;
 }
 
-#origin-text p {
-    margin: 0;
-    padding-bottom: 1em;
+/* Textarea where user types */
+#test-area {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #cccccc;
+  resize: vertical;
+  color: #000000; /* make sure text is visible */
+  background-color: #ffffff;
 }
 
-.test-wrapper {
-    display: flex;
+/* Info panel for timer, WPM, and errors */
+#info-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 20px 0;
 }
 
-.test-wrapper textarea {
-    flex: 1;
+.info-item {
+  background-color: #e0f7fa;
+  padding: 8px 12px;
+  border-radius: 4px;
 }
 
-.meta {
-    margin-top: 1em;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
+.info-label {
+  font-weight: bold;
+  margin-right: 5px;
 }
 
-.timer {
-    font-size: 3em;
-    font-weight: bold;
+/* Reset button style */
+#reset-button {
+  padding: 10px 18px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: none;
+  background-color: #673ab7;
+  color: #ffffff;
+  cursor: pointer;
 }
 
-#reset {
-    padding: .5em 1em;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #E95D0F;
-    background: white ;
-    border: 10px solid #E95D0F;
+#reset-button:hover {
+  background-color: #5e35b1;
 }
 
-#reset:hover {
-    color: white;
-    background-color: #E95D0F;
+/* Scores section */
+#scores-section {
+  margin-top: 25px;
+}
+
+#scores-list {
+  padding-left: 20px;
 }

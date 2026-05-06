@@ -1,53 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Timed Typing Test</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header class="masthead">
-    <h1>Timed Typing Test</h1>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timed Typing Test</title>
+    <!-- Basic page styling for the typing test app -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app-container">
+      <h1>Timed Typing Test</h1>
+      <p>
+        Type the paragraph below as fast and as accurately as you can.
+        The timer will start when you begin typing.
+      </p>
 
-  <section class="intro">
-    <p>
-      This is a typing test. Your goal is to duplicate the provided text, EXACTLY, in the field
-      below. The timer starts when you start typing, and only stops when you match this text
-      exactly. Good Luck!
-    </p>
-  </section>
+      <!-- 2.1-2.4 Dynamic Visual Feedback: this wrapper border changes color -->
+      <div class="test-wrapper border-neutral" id="test-wrapper">
+        <!-- 2.7 Origin text comes from the random paragraph array in script.js -->
+        <div id="origin-text">
+          <!-- 2.8 This paragraph is replaced with a random one when page loads and on Start Over -->
+          <p>Loading practice text...</p>
+        </div>
 
-  <section class="test-area">
-    <div class="test-wrapper">
-      <div id="origin-text">
-        <p>
-          This is a typing test. Your goal is to duplicate the provided text, EXACTLY, in the field
-          below. The timer starts when you start typing, and only stops when you match this text
-          exactly. Good Luck!
-        </p>
+        <!-- 1.2 Input Validation: user types here so we can compare text -->
+        <label for="test-area">Start typing here:</label>
+        <textarea
+          id="test-area"
+          rows="7"
+          cols="60"
+          placeholder="Start typing the text above..."
+        ></textarea>
       </div>
-      <textarea id="test-area" rows="6" placeholder="Start typing here..."></textarea>
+
+      <div id="info-panel">
+        <!-- 1.1 Standard Timer: timer shows minutes, seconds, hundredths -->
+        <div class="info-item">
+          <span class="info-label">Timer:</span>
+          <span id="timer">00:00:00</span>
+        </div>
+
+        <!-- 2.9 WPM: words per minute display -->
+        <div class="info-item">
+          <span class="info-label">WPM:</span>
+          <span id="wpm-display">0</span>
+        </div>
+
+        <!-- 2.10 Error Counter: show how many times the user made mistakes -->
+        <div class="info-item">
+          <span class="info-label">Errors:</span>
+          <span id="error-display">0</span>
+        </div>
+      </div>
+
+      <!-- 1.4 Reset Logic: Start Over button clears test and picks a new paragraph -->
+      <button id="reset-button">Start Over</button>
+
+      <!-- 2.5 and 2.6 Top Three Fastest Scores stored in localStorage -->
+      <section id="scores-section">
+        <h2>Top 3 Fastest Times</h2>
+        <ol id="scores-list">
+          <!-- Filled by JavaScript using saved scores -->
+        </ol>
+      </section>
     </div>
 
-    <div class="meta">
-      <div class="timer">00:00:00</div>
-      <button id="reset">Start over</button>
-    </div>
-
-    <!-- Simple box for live performance numbers -->
-    <div class="meta">
-      <p>WPM: <span id="wpm">0</span></p>
-      <p>Errors: <span id="errors">0</span></p>
-    </div>
-
-    <!-- Simple box for top three best times -->
-    <div class="meta">
-      <p>Top 3 fastest times:</p>
-      <ol id="best-times"></ol>
-    </div>
-  </section>
-
-  <script src="script.js"></script>
-</body>
+    <!-- JavaScript logic for the typing test app -->
+    <script src="script.js"></script>
+  </body>
 </html>

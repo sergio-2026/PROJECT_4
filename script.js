@@ -1,309 +1,367 @@
-// Grab the main parts of the page we need to work with
-var testWrapper = document.querySelector(".test-wrapper");
-var testArea = document.querySelector("#test-area");
-var originTextElement = document.querySelector("#origin-text p");
-var originText = originTextElement.innerHTML;
-var resetButton = document.querySelector("#reset");
-var theTimer = document.querySelector(".timer");
-var wpmSpan = document.querySelector("#wpm");
-var errorsSpan = document.querySelector("#errors");
-var bestList = document.querySelector("#best-times");
+// =========================
+// Timed Typing Test Script
+// =========================
 
-// This will hold all our random paragraphs
-// 2.7  - **Content Randomization:** Create an array of at least 5 different text paragraphs in your JavaScript file.
-var paragraphs = [
-  "This is a typing test. Your goal is to duplicate the provided text, EXACTLY, in the field below. The timer starts when you start typing, and only stops when you match this text exactly. Good Luck!",
-  "Typing is a useful skill that gets better with practice. When you time yourself, you can see real progress over many days of work.",
-  "JavaScript lets us make web pages feel alive. We can check what you type, measure time, and change colors when you make a mistake.",
-  "When you learn to code, it is normal to make many mistakes. The important part is that you keep trying and fix each problem slowly.",
-  "This project uses a simple timer and some basic rules. Your job is to type each letter the right way and try to beat your best time."
+// 1.1 Standard Timer: numbers for minutes, seconds, and hundredths of a second
+let timerNumbers = [0, 0, 0]; // [minutes, seconds, hundredths]
+
+// 1.1 Standard Timer: this holds the id from setInterval so we can stop it later
+let timerIntervalId = null;
+
+// 1.1 Standard Timer: this flag tells us if the timer is already running
+let timerIsRunning = false;
+
+// 2.10 Error Counter: how many times the user makes a mistake in this run
+let errorCount = 0;
+
+// 2.9 WPM: we keep the last WPM value here for display
+let currentWpm = 0;
+
+// 2.7 Random Paragraphs: at least 5 pieces of text for the user to type
+const paragraphList = [
+  "Typing every day helps your hands and brain work as a team.",
+  "JavaScript lets web pages listen and react when people click or type.",
+  "Short practice sessions are better than one very long and boring session.",
+  "Careful typing is usually faster in the end than fast but very sloppy typing.",
+  "Small projects are great because you can finish them and feel proud quickly."
 ];
 
-// Timer values and control
-var timerHundredths = 0;     // how many hundredths of a second have passed
-var timerRunning = false;    // true when the timer is moving
-var timerInterval = null;    // will store the setInterval id
+// 2.5 and 2.6 Top Scores: this array holds the fastest results
+let topScores = [];
 
-// Extra counters for stats
-var errorCount = 0;          // how many times we go into a wrong state
-var lastState = "correct";   // can be "correct" or "wrong"
+// Grab elements from the page so we can change them with JavaScript
+// 1.2 Input Validation: we read the original text from this element
+const originTextElement = document.querySelector("#origin-text p");
 
-// This will hold our best times in hundredths
-var bestTimes = [];
+// 1.2 Input Validation: we compare the user's typing in this textarea
+const testArea = document.getElementById("test-area");
 
-/*
-  1.1 - **Standard Timer:** Implement a minute/second/hundredths timer (00:00:00).
-*/
-// Make a number always show two digits (for example 5 becomes "05")
-function leadingZero(number) {
-  if (number < 10) {
-    return "0" + number;
-  } else {
-    return "" + number;
-  }
+// 1.1 Standard Timer: we show the time in this span
+const timerDisplay = document.getElementById("timer");
+
+// 1.4 Reset Logic: this button lets the user start over
+const resetButton = document.getElementById("reset-button");
+
+// 2.1-2.4 Dynamic Visual Feedback: this wrapper border changes color
+const testWrapper = document.getElementById("test-wrapper");
+
+// 2.9 WPM: we write the words per minute here
+const wpmDisplay = document.getElementById("wpm-display");
+
+// 2.10 Error Counter: we write the error count here
+const errorDisplay = document.getElementById("error-display");
+
+// 2.5 and 2.6 Top Scores: we draw the top three scores into this list
+const scoresList = document.getElementById("scores-list");
+
+// 2.10 Error Counter: keep track of the last typing state so we do not
+// add error points over and over for the same wrong stretch
+let lastTypingState = "neutral"; // can be "neutral", "correct", "error", "complete"
+
+// -----------------------------
+// Helper Functions
+// -----------------------------
+
+// 1.1 Standard Timer: format a number so it always has two digits like 04 or 12
+function formatTwoDigits(number) {
+  // If the number is smaller than 10, add a zero at the front
+  return number < 10 ? "0" + number : number.toString();
 }
 
-/*
-  1.1 - **Standard Timer:** Implement a minute/second/hundredths timer (00:00:00).
-*/
-// This function runs every 1/100 of a second and updates the timer text
-function runTimer() {
+// 2.1-2.4 Dynamic Visual Feedback: set the wrapper border color class
+function setBorderState(stateName) {
+  // First remove all border classes so we do not mix styles
+  testWrapper.classList.remove(
+    "border-neutral",
+    "border-correct",
+    "border-error",
+    "border-complete"
+  );
+
+  // Then add the class that matches the new state
+  if (stateName === "neutral") {
+    testWrapper.classList.add("border-neutral");
+  } else if (stateName === "correct") {
+    testWrapper.classList.add("border-correct");
+  } else if (stateName === "error") {
+    testWrapper.classList.add("border-error");
+  } else if (stateName === "complete") {
+    testWrapper.classList.add("border-complete");
+  }
+
+  // 2.10 Error Counter: remember this state so we can see when we enter an error
+  lastTypingState = stateName;
+}
+
+// 1.1 Standard Timer: update the timer numbers every 10 milliseconds
+function runTimerTick() {
   // Add one hundredth of a second
-  timerHundredths = timerHundredths + 1;
+  timerNumbers[2]++;
 
-  // Work out minutes, seconds, and hundredths from the total
-  var minutes = Math.floor(timerHundredths / 6000);             // 100 * 60
-  var seconds = Math.floor((timerHundredths / 100) % 60);
-  var hundredths = timerHundredths % 100;
+  // If hundredths reach 100, turn them into 1 second
+  if (timerNumbers[2] >= 100) {
+    timerNumbers[2] = 0;
+    timerNumbers[1]++;
+  }
 
-  // Build a string like "00:00:00"
-  var timerString =
-    leadingZero(minutes) + ":" +
-    leadingZero(seconds) + ":" +
-    leadingZero(hundredths);
+  // If seconds reach 60, turn them into 1 minute
+  if (timerNumbers[1] >= 60) {
+    timerNumbers[1] = 0;
+    timerNumbers[0]++;
+  }
 
-  // Show that string on the page
-  theTimer.innerHTML = timerString;
+  // Build the display string in the form MM:SS:HH
+  const displayText =
+    formatTwoDigits(timerNumbers[0]) +
+    ":" +
+    formatTwoDigits(timerNumbers[1]) +
+    ":" +
+    formatTwoDigits(timerNumbers[2]);
+
+  // 1.1 Standard Timer: show the new time on the page
+  timerDisplay.textContent = displayText;
 }
 
-/*
-  1.4 - **Reset Logic:** The "Start Over" button must clear the text area, reset the timer to zero, and revert any visual state changes.
-  2.7  - **Content Randomization:** Create an array of at least 5 different text paragraphs in your JavaScript file.
-  2.8  - **Content Randomization:** Each time the "Start Over" button is clicked, a random paragraph from the array should be injected into the #origin-text p element.
-*/
-// Pick a random paragraph and reset the test to a clean start
-function resetTest() {
-  // Stop the timer if it is running
-  if (timerInterval !== null) {
-    clearInterval(timerInterval);
-  }
-  timerInterval = null;
-  timerRunning = false;
-  timerHundredths = 0;
-
-  // Reset timer display back to zero
-  theTimer.innerHTML = "00:00:00";
-
-  // Clear the text area
-  testArea.value = "";
-
-  // Put the border back to grey (normal state)
-  testWrapper.style.borderColor = "grey";
-
-  // Reset error counter and state
-  errorCount = 0;
-  lastState = "correct";
-  errorsSpan.innerHTML = "0";
-
-  // Reset WPM display
-  wpmSpan.innerHTML = "0";
-
-  // Pick a random paragraph from the array
-  var randomIndex = Math.floor(Math.random() * paragraphs.length);
-  originText = paragraphs[randomIndex];
-  originTextElement.innerHTML = originText;
-
-  // Put the cursor in the text area so student can start typing
-  testArea.focus();
-}
-
-/*
-  1.2 - **Input Validation:** Compare the user's input in the textarea with the provided origin text.
-  2.1  - **Dynamic Visual Feedback:** The border color of the `.test-wrapper` must change in real-time.
-  2.2  - **Blue:** While typing and matching the text correctly.
-  2.3  - **Orange/Red:** If a typo is detected (input doesn't match the substring of the origin).
-  2.4  - **Green:** When the test is successfully completed.
-  2.10 - **Error Counter:** Keep track of how many times the user makes a mistake (mismatching characters) during a single session.
-  2.9  - **WPM (Words Per Minute):** Calculate and display the WPM using the standard formula: `(Total Characters / 5) / (Total Seconds / 60)`.
-  2.5  - **Top Three Fastest Scores:** Display the Top Three Fastest Scores on the page.
-*/
-// Check what the user typed and update colors and stats
-function spellCheck() {
-  // Get the text the user has typed so far
-  var textEntered = testArea.value;
-
-  // Get the part of the original text that matches the length of the typed text
-  var originMatch = originText.substring(0, textEntered.length);
-
-  // If the whole text matches exactly, the test is done
-  if (textEntered === originText && textEntered.length > 0) {
-    // Set border to green for success
-    testWrapper.style.borderColor = "green";
-
-    // Stop the timer
-    if (timerInterval !== null) {
-      clearInterval(timerInterval);
-    }
-    timerRunning = false;
-    timerInterval = null;
-
-    // Work out WPM
-    // Total characters in the full text
-    var totalChars = originText.length;
-    // Total seconds from hundredths
-    var totalSeconds = timerHundredths / 100;
-    // Avoid divide by zero
-    if (totalSeconds > 0) {
-      var wpm = (totalChars / 5) / (totalSeconds / 60);
-      // Round to nearest whole number
-      wpm = Math.round(wpm);
-      wpmSpan.innerHTML = "" + wpm;
-    }
-
-    // Update and show best times list
-    saveBestTime(timerHundredths);
-    showBestTimes();
-  }
-  // If the text is still matching so far (correct so far)
-  else if (textEntered === originMatch) {
-    // Set border to blue for correct typing so far
-    testWrapper.style.borderColor = "blue";
-
-    // We are now in a correct state
-    lastState = "correct";
-  }
-  // If there is a typo (does not match the start of originText)
-  else {
-    // Set border to red/orange for error
-    testWrapper.style.borderColor = "orange";
-
-    // Only count a new error when we move from correct to wrong
-    if (lastState === "correct") {
-      errorCount = errorCount + 1;
-      errorsSpan.innerHTML = "" + errorCount;
-    }
-
-    // We are now in a wrong state
-    lastState = "wrong";
+// 1.1 Standard Timer: start the timer if it is not running yet
+function startTimerIfNeeded() {
+  // Only start the timer once, on the first input
+  if (!timerIsRunning) {
+    // Start calling runTimerTick every 10 milliseconds
+    timerIntervalId = setInterval(runTimerTick, 10);
+    timerIsRunning = true;
   }
 }
 
-/*
-  1.3 - **Event Handling:** Use appropriate event listeners for keyboard input (to start/check the test) and button clicks (to reset).
-*/
-// Start the timer when the user types the first character
-function startTimer() {
-  // Only start if text area is not empty and timer is not running yet
-  if (!timerRunning && testArea.value.length === 0) {
-    timerRunning = true;
-
-    // Start running runTimer every 10 milliseconds (1/100 second)
-    timerInterval = setInterval(runTimer, 10);
+// 1.1 and 1.4: stop the timer when test is done or user resets
+function stopTimer() {
+  if (timerIntervalId !== null) {
+    clearInterval(timerIntervalId);
+    timerIntervalId = null;
   }
+  timerIsRunning = false;
 }
 
-/*
-  2.5  - **Top Three Fastest Scores:** Display the Top Three Fastest Scores on the page.
-  2.6  - **These scores must persist across browser refreshes using the `localStorage` API.**
-*/
-// Load best times from localStorage when the page starts
-function loadBestTimes() {
-  // localStorage is new. It lets the browser remember data even after refresh.
-  var stored = localStorage.getItem("bestTimes");
+// 2.9 WPM: calculate words per minute using the given formula
+function calculateWpm(totalCharactersTyped) {
+  // Count how many full "words" this text has if we say 5 characters per word
+  const wordsTyped = totalCharactersTyped / 5;
+
+  // Turn timerNumbers into the total number of seconds
+  const totalSeconds =
+    timerNumbers[0] * 60 + timerNumbers[1] + timerNumbers[2] / 100;
+
+  // Protect against divide by zero if something goes wrong
+  if (totalSeconds === 0) {
+    return 0;
+  }
+
+  // Formula from the instructions: (Total Characters / 5) / (Total Seconds / 60)
+  const wpm = (wordsTyped * 60) / totalSeconds;
+
+  // 2.9 WPM: we round to the nearest whole number to keep it easy to read
+  return Math.round(wpm);
+}
+
+// 2.5 and 2.6 Top Scores: save the topScores array in localStorage
+function saveScoresToStorage() {
+  // Turn our scores array into a JSON string for localStorage
+  const scoresJson = JSON.stringify(topScores);
+  localStorage.setItem("typingTestTopScores", scoresJson);
+}
+
+// 2.5 and 2.6 Top Scores: read scores from localStorage when the page loads
+function loadScoresFromStorage() {
+  const stored = localStorage.getItem("typingTestTopScores");
 
   if (stored) {
-    // We store times as a simple comma list like "200,350,400"
-    var parts = stored.split(",");
-    bestTimes = [];
-
-    var i;
-    for (i = 0; i < parts.length; i++) {
-      var value = Number(parts[i]);
-      if (!isNaN(value) && value > 0) {
-        bestTimes.push(value);
-      }
-    }
-
-    // Sort best times from fastest (smallest) to slowest (largest)
-    bestTimes.sort(function (a, b) {
-      return a - b;
-    });
-
-    // Keep only top three
-    if (bestTimes.length > 3) {
-      bestTimes = bestTimes.slice(0, 3);
-    }
+    // Turn the JSON string back into a normal array
+    topScores = JSON.parse(stored);
   } else {
-    bestTimes = [];
+    topScores = [];
   }
-
-  showBestTimes();
 }
 
-/*
-  2.5  - **Top Three Fastest Scores:** Display the Top Three Fastest Scores on the page.
-*/
-// Save a new time into the bestTimes list and localStorage
-function saveBestTime(newTime) {
-  // Add the new time to the list
-  bestTimes.push(newTime);
+// 2.5 and 2.6 Top Scores: show the scores list on the page
+function renderScoresList() {
+  // First clear any old list items
+  scoresList.innerHTML = "";
 
-  // Sort from fastest to slowest
-  bestTimes.sort(function (a, b) {
-    return a - b;
+  // If there are no scores yet, show a simple message
+  if (topScores.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "No scores yet. Finish a test to add one.";
+    scoresList.appendChild(li);
+    return;
+  }
+
+  // For each score, make a list item that shows time, WPM, and errors
+  for (let i = 0; i < topScores.length; i++) {
+    const score = topScores[i];
+    const li = document.createElement("li");
+
+    // Show time first, then WPM and errors
+    li.textContent =
+      score.timeText +
+      " - " +
+      score.wpm +
+      " WPM, " +
+      score.errors +
+      " error(s)";
+
+    scoresList.appendChild(li);
+  }
+}
+
+// 2.7 and 2.8 Random Paragraphs: choose one paragraph and place it on the page
+function setRandomParagraph() {
+  // Pick a random index between 0 and paragraphList.length - 1
+  const randomIndex = Math.floor(Math.random() * paragraphList.length);
+
+  // Get the text at that index
+  const newText = paragraphList[randomIndex];
+
+  // 2.7 and 2.8: put the random text into the originTextElement
+  originTextElement.textContent = newText;
+}
+
+// 1.4 Reset Logic and 2.7-2.8 Random Paragraphs: reset the whole typing test
+function resetTest() {
+  // Stop any running timer
+  stopTimer();
+
+  // 1.4 Reset Logic: set timer numbers back to zero
+  timerNumbers = [0, 0, 0];
+  timerDisplay.textContent = "00:00:00";
+
+  // 1.4 Reset Logic: clear the text area and make it editable again
+  testArea.value = "";
+  testArea.disabled = false;
+
+  // 2.10 Error Counter: reset error count and show zero
+  errorCount = 0;
+  errorDisplay.textContent = "0";
+
+  // 2.9 WPM: reset WPM display
+  currentWpm = 0;
+  wpmDisplay.textContent = "0";
+
+  // 2.1-2.4 Dynamic Visual Feedback: go back to neutral gray border
+  setBorderState("neutral");
+
+  // 2.7 and 2.8: load a fresh random paragraph for the new run
+  setRandomParagraph();
+}
+
+// 1.2 Input Validation and 2.1-2.4 + 2.9 + 2.10: check text while user types
+function handleTypingInput() {
+  // 1.3 Event Handling: start the timer on the very first input
+  startTimerIfNeeded();
+
+  // 1.2 Input Validation: get the original full text and the user's text
+  const originText = originTextElement.textContent;
+  const userText = testArea.value;
+
+  // Make a slice of the origin that is the same length as what the user typed
+  const sliceToCompare = originText.substring(0, userText.length);
+
+  // First check if the full text matches and lengths are the same
+  if (userText === originText && userText.length > 0) {
+    // 1.2 Input Validation: user finished the test exactly
+    // 2.4 Dynamic Visual Feedback: border turns green for success
+    setBorderState("complete");
+
+    // 1.1 Standard Timer: stop the timer when done
+    stopTimer();
+
+    // 2.9 WPM: calculate words per minute based on total characters
+    currentWpm = calculateWpm(userText.length);
+    wpmDisplay.textContent = currentWpm.toString();
+
+    // 2.5 and 2.6 Top Scores: add this result to our scores list
+    addScoreAndUpdateBoard();
+
+    // After finishing, lock the textarea so user knows test is over
+    testArea.disabled = true;
+
+    return; // no more checks needed
+  }
+
+  // If not finished, now check if the text typed so far still matches the slice
+  if (userText === sliceToCompare) {
+    // 2.2 Blue: user is typing correctly so far
+    setBorderState("correct");
+  } else {
+    // We only count a new error when we move from "correct" or "neutral" into "error"
+    if (lastTypingState !== "error" && userText.length > 0) {
+      // 2.10 Error Counter: this is one new mistake event
+      errorCount++;
+      errorDisplay.textContent = errorCount.toString();
+    }
+
+    // 2.3 Orange/Red: there is a typo right now
+    setBorderState("error");
+  }
+}
+
+// 2.5 and 2.6 Top Scores: add new score, keep only top 3, save, and redraw list
+function addScoreAndUpdateBoard() {
+  // Build a string for the time, for example "00:32:45"
+  const timeText =
+    formatTwoDigits(timerNumbers[0]) +
+    ":" +
+    formatTwoDigits(timerNumbers[1]) +
+    ":" +
+    formatTwoDigits(timerNumbers[2]);
+
+  // Turn the current timer numbers into a total number of seconds
+  const totalSeconds =
+    timerNumbers[0] * 60 + timerNumbers[1] + timerNumbers[2] / 100;
+
+  // Make a score object so we can sort and display nicely
+  const newScore = {
+    timeText: timeText,
+    totalSeconds: totalSeconds,
+    wpm: currentWpm,
+    errors: errorCount
+  };
+
+  // Put the new score into the array
+  topScores.push(newScore);
+
+  // Sort scores by time from fastest (smallest totalSeconds) to slowest
+  topScores.sort(function (a, b) {
+    return a.totalSeconds - b.totalSeconds;
   });
 
-  // Keep only top three best times
-  if (bestTimes.length > 3) {
-    bestTimes = bestTimes.slice(0, 3);
+  // Keep only the top three fastest scores
+  if (topScores.length > 3) {
+    topScores = topScores.slice(0, 3);
   }
 
-  // Turn list into simple string like "200,350,400"
-  var parts = [];
-  var i;
-  for (i = 0; i < bestTimes.length; i++) {
-    parts.push("" + bestTimes[i]);
-  }
-  var saveString = parts.join(",");
-
-  // Save to localStorage so it stays after refresh
-  localStorage.setItem("bestTimes", saveString);
+  // Save the scores to localStorage and redraw the list
+  saveScoresToStorage();
+  renderScoresList();
 }
 
-/*
-  2.5  - **Top Three Fastest Scores:** Display the Top Three Fastest Scores on the page.
-*/
-// Show best times list in the <ol> element
-function showBestTimes() {
-  // Clear what is there now
-  bestList.innerHTML = "";
+// -----------------------------
+// Event Listeners
+// -----------------------------
 
-  var i;
-  for (i = 0; i < bestTimes.length; i++) {
-    // Convert stored hundredths into mm:ss:hh string
-    var total = bestTimes[i];
-    var minutes = Math.floor(total / 6000);
-    var seconds = Math.floor((total / 100) % 60);
-    var hundredths = total % 100;
+// 1.3 Event Handling: listen for keyboard input in the textarea
+testArea.addEventListener("input", handleTypingInput);
 
-    var line =
-      leadingZero(minutes) + ":" +
-      leadingZero(seconds) + ":" +
-      leadingZero(hundredths);
-
-    var li = document.createElement("li");
-    li.innerHTML = line;
-    bestList.appendChild(li);
-  }
-}
-
-/*
-  1.3 - **Event Handling:** Use appropriate event listeners for keyboard input (to start/check the test) and button clicks (to reset).
-*/
-// When user presses a key down in the text area, try to start the timer
-testArea.addEventListener("keydown", startTimer);
-
-// When user lets go of a key, check the text
-testArea.addEventListener("keyup", spellCheck);
-
-// When user clicks the reset button, reset everything
+// 1.3 and 1.4 Event Handling + Reset Logic: reset everything when button is clicked
 resetButton.addEventListener("click", resetTest);
 
-/*
-  1.4 - **Reset Logic:** The "Start Over" button must clear the text area, reset the timer to zero, and revert any visual state changes.
-*/
-// Also run resetTest once when the page first loads
-resetTest();
+// -----------------------------
+// Initial Page Setup
+// -----------------------------
 
-// Load best times from localStorage right away when the page loads
-loadBestTimes();
+// 2.5 and 2.6 Top Scores: load any old scores from localStorage on page load
+loadScoresFromStorage();
+
+// 2.5 and 2.6 Top Scores: draw the loaded scores to the page
+renderScoresList();
+
+// 2.7 and 2.8 Random Paragraphs: choose the first random text and set starting state
+resetTest();
