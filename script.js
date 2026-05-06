@@ -69,6 +69,8 @@ function formatTwoDigits(number) {
   return number < 10 ? "0" + number : number.toString();
 }
 
+// My Presentaion begins here
+//*****************************************************************/
 // 2.1-2.4 Dynamic Visual Feedback: set the wrapper border color class
 function setBorderState(stateName) {
   // First remove all border classes so we do not mix styles
@@ -89,6 +91,8 @@ function setBorderState(stateName) {
   } else if (stateName === "complete") {
     testWrapper.classList.add("border-complete");
   }
+  // My Presentaion ends here
+  //*****************************************************************/
 
   // 2.10 Error Counter: remember this state so we can see when we enter an error
   lastTypingState = stateName;
@@ -195,9 +199,13 @@ function renderScoresList() {
     return;
   }
 
+  // My Presentaion begins here
+  //*****************************************************************/
   // For each score, make a list item that shows time, WPM, and errors
   for (let i = 0; i < topScores.length; i++) {
     const score = topScores[i];
+
+    // Create a brand new <li> tag in memory
     const li = document.createElement("li");
 
     // Show time first, then WPM and errors
@@ -208,8 +216,11 @@ function renderScoresList() {
       " WPM, " +
       score.errors +
       " error(s)";
-
+    
+    // Attach it to the list on the page
     scoresList.appendChild(li);
+  // My Presentaion ends here
+  //*****************************************************************/
   }
 }
 
