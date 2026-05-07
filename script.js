@@ -59,18 +59,20 @@ const scoresList = document.getElementById("scores-list");
 // add error points over and over for the same wrong stretch
 let lastTypingState = "neutral"; // can be "neutral", "correct", "error", "complete"
 
-// -----------------------------
-// Helper Functions
-// -----------------------------
-
 // 1.1 Standard Timer: format a number so it always has two digits like 04 or 12
 function formatTwoDigits(number) {
   // If the number is smaller than 10, add a zero at the front
   return number < 10 ? "0" + number : number.toString();
 }
 
-// My Presentaion begins here
-//*****************************************************************/
+
+
+
+
+
+//*********************************************************************************/
+// Item 12: The Visual State Machine: Explain how you manipulated testWrapper.style.borderColor for Blue, Red, and Green states.
+
 // 2.1-2.4 Dynamic Visual Feedback: set the wrapper border color class
 function setBorderState(stateName) {
   // First remove all border classes so we do not mix styles
@@ -83,16 +85,15 @@ function setBorderState(stateName) {
 
   // Then add the class that matches the new state
   if (stateName === "neutral") {
-    testWrapper.classList.add("border-neutral");
+    testWrapper.classList.add("border-neutral"); // gray border for starting state
   } else if (stateName === "correct") {
-    testWrapper.classList.add("border-correct");
+    testWrapper.classList.add("border-correct"); // blue border for correct typing so far
   } else if (stateName === "error") {
-    testWrapper.classList.add("border-error");
+    testWrapper.classList.add("border-error"); // red border for a typo in the current text
   } else if (stateName === "complete") {
-    testWrapper.classList.add("border-complete");
+    testWrapper.classList.add("border-complete"); // green border for successfully finishing the test
   }
-  // My Presentaion ends here
-  //*****************************************************************/
+  //*********************************************************************************/
 
   // 2.10 Error Counter: remember this state so we can see when we enter an error
   lastTypingState = stateName;
@@ -199,11 +200,13 @@ function renderScoresList() {
     return;
   }
 
-  // My Presentaion begins here
-  //*****************************************************************/
+
+  // *********************************************************************************/
+  // 17. Dynamic Element Creation: Show how your JavaScript creates new <li> tags to display the high score list.
+
   // For each score, make a list item that shows time, WPM, and errors
-  for (let i = 0; i < topScores.length; i++) {
-    const score = topScores[i];
+  for (let i = 0; i < topScores.length; i++) {  
+    const score = topScores[i];                 //Get the current score
 
     // Create a brand new <li> tag in memory
     const li = document.createElement("li");
@@ -219,10 +222,9 @@ function renderScoresList() {
     
     // Attach it to the list on the page
     scoresList.appendChild(li);
-  // My Presentaion ends here
-  //*****************************************************************/
   }
 }
+  //*********************************************************************************/
 
 // 2.7 and 2.8 Random Paragraphs: choose one paragraph and place it on the page
 function setRandomParagraph() {

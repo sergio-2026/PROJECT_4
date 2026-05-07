@@ -43,7 +43,7 @@ p {
 
 /* 2.3 Orange/Red: user made a typo */
 .border-error {
-  border-color: #ff9800;
+  border-color: #ff000088;
 }
 
 /* 2.4 Green: typing test finished with full match */
